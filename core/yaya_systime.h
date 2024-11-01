@@ -1,26 +1,56 @@
 #ifndef YAYA_SYSTIME_H
 #define YAYA_SYSTIME_H
 
-#include "time.h"
-#include "stdint.h"
 #include "stdbool.h"
+#include "stdint.h"
 
-#define NANOS 1000000000
-#define MICRO 1000000
-#define MILLI 1000
+typedef double yaya_systime_float_t;
 
-typedef struct timespec realtime_t;
+typedef enum {
+    YAYA_TIME_CLOCK_TYPE_REALTIME,
+    YAYA_TIME_CLOCK_TYPE_TAI,
+    YAYA_TIME_CLOCK_TYPE_MONOTONIC,
+} yaya_time_clockid_type_e;
 
-realtime_t get_time_real();
+typedef enum {
+    YAYA_TIME_FRAGMENT_TYPE_REAL,
+    YAYA_TIME_FRAGMENT_TYPE_USER,
+    YAYA_TIME_FRAGMENT_TYPE_SYS,
+} yaya_time_fragment_type_e;
 
-realtime_t time_dif(realtime_t beg, realtime_t end);
+typedef struct {
+    int64_t signum; // -1 or +1
+    int64_t second; //  0 .. INT64_MAX
+    int64_t millis; //  0 .. 999
+    int64_t micros; //  0 .. 999
+    int64_t nanos;  //  0 .. 999
+} yaya_time_fragment_t;
 
-realtime_t time_sum(realtime_t beg, realtime_t end);
+typedef struct {
+    yaya_time_fragment_t real;
+    yaya_time_fragment_t user;
+    yaya_time_fragment_t sys;
+} yaya_time_sys_t;
 
-realtime_t time_build(uint64_t sec, uint64_t nsec);
+yaya_time_fragment_t yaya_time_fragment_get(yaya_time_fragment_type_e type);
+void                 yaya_time_fragment_delay(yaya_time_fragment_t time_fragment, yaya_time_clockid_type_e clockid);
+void                 yaya_time_fragment_sleep(yaya_time_fragment_t time_fragment, yaya_time_clockid_type_e clockid);
 
-long double time_convert(realtime_t time);
+yaya_time_fragment_t yaya_time_fragment_nor(yaya_time_fragment_t time_fragment);
+yaya_time_fragment_t yaya_time_fragment_dif(yaya_time_fragment_t beg, yaya_time_fragment_t end);
+yaya_time_fragment_t yaya_time_fragment_sum(yaya_time_fragment_t beg, yaya_time_fragment_t end);
 
-void time_sleep(realtime_t time);
+yaya_time_fragment_t yaya_time_fragment_build(int64_t second, int64_t millis, int64_t micros, int64_t nanos);
+yaya_systime_float_t yaya_time_fragment_convflt(yaya_time_fragment_t time_fragment);
+int64_t              yaya_time_fragment_convstr(yaya_time_fragment_t time_fragment, char* buff, int64_t size);
+
+
+yaya_time_sys_t      yaya_time_sys_get(void);
+
+yaya_time_sys_t      yaya_time_sys_nor(yaya_time_sys_t time_sys);
+yaya_time_sys_t      yaya_time_sys_dif(yaya_time_sys_t time_sys_1, yaya_time_sys_t time_sys_2);
+yaya_time_sys_t      yaya_time_sys_sum(yaya_time_sys_t time_sys_1, yaya_time_sys_t time_sys_2);
+
+int64_t              yaya_time_sys_convstr(yaya_time_sys_t time_sys, char* buff, int64_t size);
 
 #endif /*YAYA_SYSTIME_H*/
