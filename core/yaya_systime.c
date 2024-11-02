@@ -16,15 +16,6 @@
 #define CONSTANT_MAX_FRACTIONAL INT64_C(999)
 #define CONSTANT_DIV_FRACTIONAL INT64_C(1000)
 
-static int64_t scnprintf(char *buf, int64_t size, const char *fmt, ...) {
-    va_list args;
-    int     i;
-    va_start(args, fmt);
-    i = vsnprintf(buf, size, fmt, args);
-    va_end(args);
-    return (i >= size) ? size : i;
-}
-
 /*==================================================================================================================================================*/
 
 yaya_time_fragment_t yaya_time_fragment_get(yaya_time_fragment_type_e type) {
@@ -43,6 +34,8 @@ void yaya_time_fragment_sleep(yaya_time_fragment_t time_fragment, yaya_time_cloc
     (void)(clockid);
 }
 
+/*==================================================================================================================================================*/
+
 static yaya_time_fragment_t set_sign(yaya_time_fragment_t time_fragment) {
     if (time_fragment.signum != 0) {
         time_fragment.nanos  *= time_fragment.signum;
@@ -55,15 +48,9 @@ static yaya_time_fragment_t set_sign(yaya_time_fragment_t time_fragment) {
 }
 
 static void counter(int64_t *m, int64_t *M) {
-    if (*m > CONSTANT_MAX_FRACTIONAL) {
-        int64_t k  = *m / CONSTANT_DIV_FRACTIONAL;
-        *M        += k;
-        *m         = *m % CONSTANT_DIV_FRACTIONAL;
-    }
-    if (*m < CONSTANT_MIN_FRACTIONAL) {
-        int64_t k  = *m / CONSTANT_DIV_FRACTIONAL;
-        *M        += k;
-        *m         = *m % CONSTANT_DIV_FRACTIONAL;
+    if (*m != 0) {
+        *M += *m / CONSTANT_DIV_FRACTIONAL;
+        *m  = *m % CONSTANT_DIV_FRACTIONAL;
     }
 }
 
@@ -158,14 +145,22 @@ yaya_systime_float_t yaya_time_fragment_convflt(yaya_time_fragment_t time_fragme
     return time_float;
 }
 
+static int64_t scnprintf(char *buf, int64_t size, const char *fmt, ...) {
+    va_list args;
+    int     i;
+    va_start(args, fmt);
+    i = vsnprintf(buf, size, fmt, args);
+    va_end(args);
+    return (i >= size) ? size : i;
+}
+
 int64_t yaya_time_fragment_convstr(yaya_time_fragment_t time_fragment, char *buff, int64_t size) {
     int64_t count = 0;
 
     time_fragment = yaya_time_fragment_nor(time_fragment);
 
-    // count += scnprintf(&buff[count], size - count, "[%c] ", time_fragment.signum == +1 ? '+' : time_fragment.signum == -1 ? '-' : '?');
-
-    count += scnprintf(&buff[count], size - count, "| %+4" PRIi64 " sec  ", time_fragment.second * time_fragment.signum);
+    count += scnprintf(&buff[count], size - count, "| %c", time_fragment.signum == +1 ? '+' : time_fragment.signum == -1 ? '-' : '?');
+    count += scnprintf(&buff[count], size - count, "%4" PRIi64 " sec  ", time_fragment.second);
     count += scnprintf(&buff[count], size - count, "%3" PRIi64 " millis  ", time_fragment.millis);
     count += scnprintf(&buff[count], size - count, "%3" PRIi64 " micros  ", time_fragment.micros);
     count += scnprintf(&buff[count], size - count, "%3" PRIi64 " nanos ", time_fragment.nanos);

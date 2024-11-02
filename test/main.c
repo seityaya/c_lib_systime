@@ -58,6 +58,14 @@ int main(void) {
         time_fr = yaya_time_fragment_build(1, -1000, 0, -900);
         yaya_time_fragment_convstr(time_fr, buff, BUFF_SIZE);
         printf("+1 -1000 +0    -900  ==> %s\n", buff);
+
+        time_fr = yaya_time_fragment_build(0, 0, 0, +1000000000);
+        yaya_time_fragment_convstr(time_fr, buff, BUFF_SIZE);
+        printf("+0 +0 +0 +1000000000 ==> %s\n", buff);
+
+        time_fr = yaya_time_fragment_build(0, 0, 0, -1000000000);
+        yaya_time_fragment_convstr(time_fr, buff, BUFF_SIZE);
+        printf("+0 +0 +0 -1000000000 ==> %s\n", buff);
     }
 
     printf("\n");
