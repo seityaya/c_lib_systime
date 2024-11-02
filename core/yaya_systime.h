@@ -32,6 +32,7 @@ typedef struct {
     yaya_time_fragment_t sys;
 } yaya_time_sys_t;
 
+
 yaya_time_fragment_t yaya_time_fragment_get(yaya_time_fragment_type_e type);
 void                 yaya_time_fragment_delay(yaya_time_fragment_t time_fragment, yaya_time_clockid_type_e clockid);
 void                 yaya_time_fragment_sleep(yaya_time_fragment_t time_fragment, yaya_time_clockid_type_e clockid);

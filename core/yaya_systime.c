@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdarg.h>
@@ -42,16 +43,6 @@ void yaya_time_fragment_sleep(yaya_time_fragment_t time_fragment, yaya_time_cloc
     (void)(clockid);
 }
 
-static int64_t signum(int64_t x) {
-    if (x > 0) {
-        return +1;
-    }
-    if (x < 0) {
-        return -1;
-    }
-    return 0;
-}
-
 static yaya_time_fragment_t set_sign(yaya_time_fragment_t time_fragment) {
     if (time_fragment.signum != 0) {
         time_fragment.nanos  *= time_fragment.signum;
@@ -63,56 +54,44 @@ static yaya_time_fragment_t set_sign(yaya_time_fragment_t time_fragment) {
     return time_fragment;
 }
 
-int64_t signum_counter(int64_t *M, int64_t *m, int64_t sign_flag) {
-    if (sign_flag == 0) {
-        sign_flag = +1;
-    }
+static void counter(int64_t *m, int64_t *M) {
     if (*m > CONSTANT_MAX_FRACTIONAL) {
         int64_t k  = *m / CONSTANT_DIV_FRACTIONAL;
         *M        += k;
         *m         = *m % CONSTANT_DIV_FRACTIONAL;
-        sign_flag  = +1;
     }
     if (*m < CONSTANT_MIN_FRACTIONAL) {
         int64_t k  = *m / CONSTANT_DIV_FRACTIONAL;
         *M        += k;
         *m         = *m % CONSTANT_DIV_FRACTIONAL;
-        sign_flag  = -1;
     }
-    return sign_flag;
+}
+
+static void signums(int64_t *m, int64_t *s) {
+    if (*s == 0) {
+        *s = +1;
+    }
+    if (*m > 0) {
+        *m *= +1;
+        *s  = +1;
+    }
+    if (*m < 0) {
+        *m *= -1;
+        *s  = -1;
+    }
 }
 
 yaya_time_fragment_t yaya_time_fragment_nor(yaya_time_fragment_t time_fragment) {
-    // clang-format off
     time_fragment = set_sign(time_fragment);
-    time_fragment.signum = signum_counter(&time_fragment.second,
-                                          &time_fragment.millis,
-                                          signum_counter(&time_fragment.millis,
-                                                         &time_fragment.micros,
-                                                         signum_counter(&time_fragment.micros,
-                                                                        &time_fragment.nanos,
-                                                                        time_fragment.signum)));
-    // clang-format on
-    time_fragment.second *= signum(time_fragment.second);
 
-    if (time_fragment.second == 0) {
-        time_fragment.signum = +1;
-        if (time_fragment.millis < 0) {
-            time_fragment.signum = -1;
-        } else if (time_fragment.micros < 0) {
-            time_fragment.signum = -1;
-        } else if (time_fragment.nanos < 0) {
-            time_fragment.signum = -1;
-        }
-    }
+    counter(&time_fragment.nanos, &time_fragment.micros);
+    counter(&time_fragment.micros, &time_fragment.millis);
+    counter(&time_fragment.millis, &time_fragment.second);
 
-    if (time_fragment.millis < 0) {
-        time_fragment.millis *= (-1);
-    } else if (time_fragment.micros < 0) {
-        time_fragment.micros *= (-1);
-    } else if (time_fragment.nanos < 0) {
-        time_fragment.nanos *= (-1);
-    }
+    signums(&time_fragment.nanos, &time_fragment.signum);
+    signums(&time_fragment.micros, &time_fragment.signum);
+    signums(&time_fragment.millis, &time_fragment.signum);
+    signums(&time_fragment.second, &time_fragment.signum);
 
     return time_fragment;
 }
@@ -156,26 +135,26 @@ yaya_time_fragment_t yaya_time_fragment_build(int64_t second, int64_t millis, in
     time_fragment.second = second;
     time_fragment.signum = 0;
 
-    return time_fragment; // TODO del
     return yaya_time_fragment_nor(time_fragment);
+}
+
+static yaya_systime_float_t inversefactor(int64_t number, int64_t factor) {
+    if (number != 0) {
+        return ((yaya_systime_float_t)(1) / (yaya_systime_float_t)(factor)) * (yaya_systime_float_t)(number);
+    }
+    return 0;
 }
 
 yaya_systime_float_t yaya_time_fragment_convflt(yaya_time_fragment_t time_fragment) {
     time_fragment = yaya_time_fragment_nor(time_fragment);
-
     // clang-format off
-#define float_result(m, c)                                                                                                                           \
-    ((m) != 0 ? (yaya_systime_float_t)(((yaya_systime_float_t)(1.0) / (yaya_systime_float_t)(c)) * (yaya_systime_float_t)(m)) : 0)
-
-yaya_systime_float_t time_float =
-        (yaya_systime_float_t)(time_fragment.signum) * (
-            (yaya_systime_float_t)(time_fragment.second) +
-                   float_result(time_fragment.millis, CONSTANT_MILLI) +
-                   float_result(time_fragment.micros, CONSTANT_MICRO) +
-                   float_result(time_fragment.nanos , CONSTANT_NANOS));
-#undef float_result
+    yaya_systime_float_t time_float =
+            (yaya_systime_float_t)(time_fragment.signum) *
+                 ((yaya_systime_float_t)(time_fragment.second)                 +
+                           inversefactor(time_fragment.millis, CONSTANT_MILLI) +
+                           inversefactor(time_fragment.micros, CONSTANT_MICRO) +
+                           inversefactor(time_fragment.nanos , CONSTANT_NANOS));
     // clang-format on
-
     return time_float;
 }
 
@@ -184,12 +163,13 @@ int64_t yaya_time_fragment_convstr(yaya_time_fragment_t time_fragment, char *buf
 
     time_fragment = yaya_time_fragment_nor(time_fragment);
 
-    count += scnprintf(&buff[count], size - count, "[%c]", time_fragment.signum == +1 ? '+' : time_fragment.signum == -1 ? '-' : '?');
-    count += scnprintf(&buff[count], size - count, "%+04" PRIi64 " sec  ", time_fragment.second);
-    count += scnprintf(&buff[count], size - count, "%+04" PRIi64 " millis  ", time_fragment.millis);
-    count += scnprintf(&buff[count], size - count, "%+04" PRIi64 " micros  ", time_fragment.micros);
-    count += scnprintf(&buff[count], size - count, "%+04" PRIi64 " nanos  ", time_fragment.nanos);
-    count += scnprintf(&buff[count], size - count, "%+25.9f fraction second", yaya_time_fragment_convflt(time_fragment));
+    // count += scnprintf(&buff[count], size - count, "[%c] ", time_fragment.signum == +1 ? '+' : time_fragment.signum == -1 ? '-' : '?');
+
+    count += scnprintf(&buff[count], size - count, "| %+4" PRIi64 " sec  ", time_fragment.second * time_fragment.signum);
+    count += scnprintf(&buff[count], size - count, "%3" PRIi64 " millis  ", time_fragment.millis);
+    count += scnprintf(&buff[count], size - count, "%3" PRIi64 " micros  ", time_fragment.micros);
+    count += scnprintf(&buff[count], size - count, "%3" PRIi64 " nanos ", time_fragment.nanos);
+    count += scnprintf(&buff[count], size - count, "| %+14.9f fraction second |", yaya_time_fragment_convflt(time_fragment));
 
     return count;
 }
