@@ -166,38 +166,90 @@ int64_t time_sleep(time_fragment_t time_sleep, time_clockid_type_e clockid) {
 
 /*==================================================================================================================================================*/
 
-time_fragment_t time_dif(time_fragment_t time_fragment_1, time_fragment_t time_fragment_2) {
-    time_fragment_1 = time_nor(time_fragment_1);
-    time_fragment_2 = time_nor(time_fragment_2);
+time_fragment_t time_dif(time_fragment_t time_1, time_fragment_t time_2) {
+    time_1 = time_nor(time_1);
+    time_2 = time_nor(time_2);
 
     time_fragment_t time_fragment = {0};
 
-    set_sign(time_fragment_1);
-    set_sign(time_fragment_2);
-    time_fragment.nanos  = time_fragment_1.nanos - time_fragment_2.nanos;
-    time_fragment.micros = time_fragment_1.micros - time_fragment_2.micros;
-    time_fragment.millis = time_fragment_1.millis - time_fragment_2.millis;
-    time_fragment.second = time_fragment_1.second - time_fragment_2.second;
+    set_sign(time_1);
+    set_sign(time_2);
+    time_fragment.nanos  = time_1.nanos - time_2.nanos;
+    time_fragment.micros = time_1.micros - time_2.micros;
+    time_fragment.millis = time_1.millis - time_2.millis;
+    time_fragment.second = time_1.second - time_2.second;
     time_fragment.signum = 0;
 
     return time_nor(time_fragment);
 }
 
-time_fragment_t time_sum(time_fragment_t time_fragment_1, time_fragment_t time_fragment_2) {
-    time_fragment_1 = time_nor(time_fragment_1);
-    time_fragment_2 = time_nor(time_fragment_2);
+time_fragment_t time_sum(time_fragment_t time_1, time_fragment_t time_2) {
+    time_1 = time_nor(time_1);
+    time_2 = time_nor(time_2);
 
     time_fragment_t time_fragment = {0};
 
-    set_sign(time_fragment_1);
-    set_sign(time_fragment_2);
-    time_fragment.nanos  = time_fragment_1.nanos + time_fragment_2.nanos;
-    time_fragment.micros = time_fragment_1.micros + time_fragment_2.micros;
-    time_fragment.millis = time_fragment_1.millis + time_fragment_2.millis;
-    time_fragment.second = time_fragment_1.second + time_fragment_2.second;
+    set_sign(time_1);
+    set_sign(time_2);
+    time_fragment.nanos  = time_1.nanos + time_2.nanos;
+    time_fragment.micros = time_1.micros + time_2.micros;
+    time_fragment.millis = time_1.millis + time_2.millis;
+    time_fragment.second = time_1.second + time_2.second;
     time_fragment.signum = 0;
 
     return time_nor(time_fragment);
+}
+
+int64_t time_cmp(time_fragment_t time_1, time_fragment_t time_2) {
+    time_1 = time_nor(time_1);
+    time_2 = time_nor(time_2);
+
+    set_sign(time_1);
+    set_sign(time_2);
+
+    if (time_1.second < time_2.second) {
+        return -1;
+    } else if (time_1.second > time_2.second) {
+        return +1;
+    }
+    if (time_1.millis < time_2.millis) {
+        return -1;
+    } else if (time_1.millis > time_2.millis) {
+        return +1;
+    }
+    if (time_1.micros < time_2.micros) {
+        return -1;
+    } else if (time_1.micros > time_2.micros) {
+        return +1;
+    }
+    if (time_1.nanos < time_2.nanos) {
+        return -1;
+    } else if (time_1.nanos > time_2.nanos) {
+        return +1;
+    }
+    return 0;
+}
+
+time_fragment_t time_min(time_fragment_t time_1, time_fragment_t time_2) {
+    time_1 = time_nor(time_1);
+    time_2 = time_nor(time_2);
+
+    if (time_cmp(time_1, time_2) == (-1)) {
+        return time_1;
+    } else {
+        return time_2;
+    }
+}
+
+time_fragment_t time_max(time_fragment_t time_1, time_fragment_t time_2) {
+    time_1 = time_nor(time_1);
+    time_2 = time_nor(time_2);
+
+    if (time_cmp(time_1, time_2) == (+1)) {
+        return time_1;
+    } else {
+        return time_2;
+    }
 }
 
 /*==================================================================================================================================================*/

@@ -38,8 +38,12 @@ time_fragment_t time_get(time_fragment_type_e type, time_clockid_type_e clockid)
 int64_t         time_delay(time_fragment_t time_delay, time_clockid_type_e clockid);
 int64_t         time_sleep(time_fragment_t time_sleep, time_clockid_type_e clockid);
 
-time_fragment_t time_dif(time_fragment_t beg, time_fragment_t end);
-time_fragment_t time_sum(time_fragment_t beg, time_fragment_t end);
+time_fragment_t time_dif(time_fragment_t time_1, time_fragment_t time_2);
+time_fragment_t time_sum(time_fragment_t time_1, time_fragment_t time_2);
+
+int64_t         time_cmp(time_fragment_t time_1, time_fragment_t time_2);
+time_fragment_t time_min(time_fragment_t time_1, time_fragment_t time_2);
+time_fragment_t time_max(time_fragment_t time_1, time_fragment_t time_2);
 
 time_fragment_t time_build(int64_t second, int64_t millis, int64_t micros, int64_t nanos);
 time_float_t    time_convflt(time_fragment_t time_fragment);

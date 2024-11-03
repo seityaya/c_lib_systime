@@ -3,7 +3,7 @@
 #include "stdio.h"
 
 int main(void) {
-    const int BUFF_SIZE       = 500;
+    const int BUFF_SIZE = 500;
     char      buff[BUFF_SIZE];
 
     {
@@ -219,10 +219,10 @@ int main(void) {
     {
         printf("sleep:\n");
 
-        time_fragment_t  sleep_time = {0};
-        time_system_t    sys_time_1 = {0};
-        time_system_t    sys_time_2 = {0};
-        time_system_t    sys_time_3 = {0};
+        time_fragment_t sleep_time = {0};
+        time_system_t   sys_time_1 = {0};
+        time_system_t   sys_time_2 = {0};
+        time_system_t   sys_time_3 = {0};
 
         sleep_time = time_build(1, 111, 0, 0);
         time_convstr(sleep_time, buff, BUFF_SIZE);
@@ -248,9 +248,9 @@ int main(void) {
         printf("delay:\n");
 
         time_fragment_t time_sleep = {0};
-        time_system_t      sys_time_1 = {0};
-        time_system_t      sys_time_2 = {0};
-        time_system_t      sys_time_3 = {0};
+        time_system_t   sys_time_1 = {0};
+        time_system_t   sys_time_2 = {0};
+        time_system_t   sys_time_3 = {0};
 
         time_sleep = time_build(1, 111, 0, 0);
         time_convstr(time_sleep, buff, BUFF_SIZE);
@@ -269,6 +269,155 @@ int main(void) {
         sys_time_3 = time_system_dif(sys_time_2, sys_time_1);
         time_system_convstr(sys_time_3, buff, BUFF_SIZE);
         printf("dif 21    \n%s\n\n", buff);
+    }
+
+    printf("\n");
+    {
+        printf("cmp:\n");
+        {
+            time_fragment_t time_1 = time_build(1, 500, 0, 0);
+            time_fragment_t time_2 = time_build(1, 400, 0, 0);
+            int64_t         res;
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            res = time_cmp(time_1, time_2);
+            printf("res +1 %+ld\n", res);
+        }
+
+        {
+            time_fragment_t time_1 = time_build(1, 400, 0, 0);
+            time_fragment_t time_2 = time_build(1, 500, 0, 0);
+            int64_t         res;
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            res = time_cmp(time_1, time_2);
+            printf("res -1 %+ld\n", res);
+        }
+
+        {
+            time_fragment_t time_1 = time_build(1, 500, 0, 0);
+            time_fragment_t time_2 = time_build(1, 500, 0, 0);
+            int64_t         res;
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            res = time_cmp(time_1, time_2);
+            printf("res 0 %ld\n", res);
+        }
+    }
+
+    printf("\n");
+    {
+        printf("min:\n");
+        {
+            time_fragment_t time_1 = time_build(1, 500, 0, 0);
+            time_fragment_t time_2 = time_build(1, 300, 0, 0);
+            time_fragment_t time_3 = {0};
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            time_3 = time_min(time_1, time_2);
+            time_convstr(time_3, buff, BUFF_SIZE);
+            printf("min  %s\n", buff);
+        }
+        {
+            time_fragment_t time_1 = time_build(1, 300, 0, 0);
+            time_fragment_t time_2 = time_build(1, 500, 0, 0);
+            time_fragment_t time_3 = {0};
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            time_3 = time_min(time_1, time_2);
+            time_convstr(time_3, buff, BUFF_SIZE);
+            printf("min  %s\n", buff);
+        }
+        {
+            time_fragment_t time_1 = time_build(1, 500, 0, 0);
+            time_fragment_t time_2 = time_build(1, 500, 0, 0);
+            time_fragment_t time_3 = {0};
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            time_3 = time_min(time_1, time_2);
+            time_convstr(time_3, buff, BUFF_SIZE);
+            printf("min  %s\n", buff);
+        }
+    }
+
+    printf("\n");
+    {
+        printf("max:\n");
+        {
+            time_fragment_t time_1 = time_build(1, 500, 0, 0);
+            time_fragment_t time_2 = time_build(1, 300, 0, 0);
+            time_fragment_t time_3 = {0};
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            time_3 = time_max(time_1, time_2);
+            time_convstr(time_3, buff, BUFF_SIZE);
+            printf("max  %s\n", buff);
+        }
+        {
+            time_fragment_t time_1 = time_build(1, 300, 0, 0);
+            time_fragment_t time_2 = time_build(1, 500, 0, 0);
+            time_fragment_t time_3 = {0};
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            time_3 = time_max(time_1, time_2);
+            time_convstr(time_3, buff, BUFF_SIZE);
+            printf("max  %s\n", buff);
+        }
+        {
+            time_fragment_t time_1 = time_build(1, 500, 0, 0);
+            time_fragment_t time_2 = time_build(1, 500, 0, 0);
+            time_fragment_t time_3 = {0};
+
+            time_convstr(time_1, buff, BUFF_SIZE);
+            printf("time_1 %s\n", buff);
+
+            time_convstr(time_2, buff, BUFF_SIZE);
+            printf("time_2 %s\n", buff);
+
+            time_3 = time_max(time_1, time_2);
+            time_convstr(time_3, buff, BUFF_SIZE);
+            printf("max  %s\n", buff);
+        }
     }
 
     return 0;
