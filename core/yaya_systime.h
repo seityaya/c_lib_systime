@@ -34,21 +34,22 @@ typedef struct {
     yaya_time_fragment_t sys;
 } yaya_time_sys_t;
 
+
+yaya_time_fragment_t yaya_time_get(yaya_time_fragment_type_e type, yaya_time_clockid_type_e clockid);
+
 int64_t              yaya_time_delay(yaya_time_fragment_t time_delay, yaya_time_clockid_type_e clockid);
 int64_t              yaya_time_sleep(yaya_time_fragment_t time_sleep, yaya_time_clockid_type_e clockid);
 
-yaya_time_fragment_t yaya_time_fragment_get(yaya_time_fragment_type_e type, yaya_time_clockid_type_e clockid);
+yaya_time_fragment_t yaya_time_nor(yaya_time_fragment_t time_fragment);
+yaya_time_fragment_t yaya_time_dif(yaya_time_fragment_t beg, yaya_time_fragment_t end);
+yaya_time_fragment_t yaya_time_sum(yaya_time_fragment_t beg, yaya_time_fragment_t end);
 
-yaya_time_fragment_t yaya_time_fragment_nor(yaya_time_fragment_t time_fragment);
-yaya_time_fragment_t yaya_time_fragment_dif(yaya_time_fragment_t beg, yaya_time_fragment_t end);
-yaya_time_fragment_t yaya_time_fragment_sum(yaya_time_fragment_t beg, yaya_time_fragment_t end);
-
-yaya_time_fragment_t yaya_time_fragment_build(int64_t second, int64_t millis, int64_t micros, int64_t nanos);
-yaya_systime_float_t yaya_time_fragment_convflt(yaya_time_fragment_t time_fragment);
-int64_t              yaya_time_fragment_convstr(yaya_time_fragment_t time_fragment, char* buff, int64_t size);
+yaya_time_fragment_t yaya_time_build(int64_t second, int64_t millis, int64_t micros, int64_t nanos);
+yaya_systime_float_t yaya_time_convflt(yaya_time_fragment_t time_fragment);
+int64_t              yaya_time_convstr(yaya_time_fragment_t time_fragment, char* buff, int64_t size);
 
 
-yaya_time_sys_t      yaya_time_sys_get(void);
+yaya_time_sys_t      yaya_time_sys_get(yaya_time_clockid_type_e clockid);
 
 yaya_time_sys_t      yaya_time_sys_nor(yaya_time_sys_t time_sys);
 yaya_time_sys_t      yaya_time_sys_dif(yaya_time_sys_t time_sys_1, yaya_time_sys_t time_sys_2);
