@@ -3,23 +3,25 @@
 
 #include "stdbool.h"
 #include "stdint.h"
+#include "time.h"
 
 typedef double yaya_systime_float_t;
 
 typedef enum {
-    YAYA_TIME_CLOCK_TYPE_REALTIME,
-    YAYA_TIME_CLOCK_TYPE_TAI,
-    YAYA_TIME_CLOCK_TYPE_MONOTONIC,
+    YAYA_TIME_CLOCK_TYPE_REALTIME   = CLOCK_REALTIME,
+    YAYA_TIME_CLOCK_TYPE_MONOTONIC  = CLOCK_MONOTONIC,
+    YAYA_TIME_CLOCK_TYPE_CPUTIME    = CLOCK_PROCESS_CPUTIME_ID,
 } yaya_time_clockid_type_e;
 
 typedef enum {
+    YAYA_TIME_FRAGMENT_TYPE_RESOLUTION,
     YAYA_TIME_FRAGMENT_TYPE_REAL,
     YAYA_TIME_FRAGMENT_TYPE_USER,
     YAYA_TIME_FRAGMENT_TYPE_SYS,
 } yaya_time_fragment_type_e;
 
 typedef struct {
-    int64_t signum; // -1 or +1
+    int64_t signum; // -1 or +1, 0 if not normasize
     int64_t second; //  0 .. INT64_MAX
     int64_t millis; //  0 .. 999
     int64_t micros; //  0 .. 999
@@ -32,10 +34,10 @@ typedef struct {
     yaya_time_fragment_t sys;
 } yaya_time_sys_t;
 
+int64_t              yaya_time_delay(yaya_time_fragment_t time_delay, yaya_time_clockid_type_e clockid);
+int64_t              yaya_time_sleep(yaya_time_fragment_t time_sleep, yaya_time_clockid_type_e clockid);
 
-yaya_time_fragment_t yaya_time_fragment_get(yaya_time_fragment_type_e type);
-void                 yaya_time_fragment_delay(yaya_time_fragment_t time_fragment, yaya_time_clockid_type_e clockid);
-void                 yaya_time_fragment_sleep(yaya_time_fragment_t time_fragment, yaya_time_clockid_type_e clockid);
+yaya_time_fragment_t yaya_time_fragment_get(yaya_time_fragment_type_e type, yaya_time_clockid_type_e clockid);
 
 yaya_time_fragment_t yaya_time_fragment_nor(yaya_time_fragment_t time_fragment);
 yaya_time_fragment_t yaya_time_fragment_dif(yaya_time_fragment_t beg, yaya_time_fragment_t end);
