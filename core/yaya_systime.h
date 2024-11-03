@@ -38,7 +38,6 @@ time_fragment_t time_get(time_fragment_type_e type, time_clockid_type_e clockid)
 int64_t         time_delay(time_fragment_t time_delay, time_clockid_type_e clockid);
 int64_t         time_sleep(time_fragment_t time_sleep, time_clockid_type_e clockid);
 
-time_fragment_t time_nor(time_fragment_t time_fragment);
 time_fragment_t time_dif(time_fragment_t beg, time_fragment_t end);
 time_fragment_t time_sum(time_fragment_t beg, time_fragment_t end);
 
@@ -49,7 +48,6 @@ int64_t         time_convstr(time_fragment_t time_fragment, char* buff, int64_t 
 
 time_system_t   time_system_get(time_clockid_type_e clockid);
 
-time_system_t   time_system_nor(time_system_t time_sys);
 time_system_t   time_system_dif(time_system_t time_sys_1, time_system_t time_sys_2);
 time_system_t   time_system_sum(time_system_t time_sys_1, time_system_t time_sys_2);
 

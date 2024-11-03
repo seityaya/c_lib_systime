@@ -18,6 +18,55 @@
 #define CONSTANT_DIV_FRACTIONAL INT64_C(1000)
 
 /*==================================================================================================================================================*/
+#define set_sign(time_fragment)                                                                                                                      \
+    do {                                                                                                                                             \
+        if (time_fragment.signum != 0) {                                                                                                             \
+            time_fragment.nanos  *= time_fragment.signum;                                                                                            \
+            time_fragment.micros *= time_fragment.signum;                                                                                            \
+            time_fragment.millis *= time_fragment.signum;                                                                                            \
+            time_fragment.second *= time_fragment.signum;                                                                                            \
+            time_fragment.signum  = 0;                                                                                                               \
+        }                                                                                                                                            \
+    } while (false)
+
+#define counter(m, M)                                                                                                                                \
+    do {                                                                                                                                             \
+        if (m != 0) {                                                                                                                                \
+            M += m / CONSTANT_DIV_FRACTIONAL;                                                                                                        \
+            m  = m % CONSTANT_DIV_FRACTIONAL;                                                                                                        \
+        }                                                                                                                                            \
+    } while (false)
+
+#define signums(m, s)                                                                                                                                \
+    do {                                                                                                                                             \
+        if (s == 0) {                                                                                                                                \
+            s = +1;                                                                                                                                  \
+        }                                                                                                                                            \
+        if (m > 0) {                                                                                                                                 \
+            m *= +1;                                                                                                                                 \
+            s  = +1;                                                                                                                                 \
+        }                                                                                                                                            \
+        if (m < 0) {                                                                                                                                 \
+            m *= -1;                                                                                                                                 \
+            s  = -1;                                                                                                                                 \
+        }                                                                                                                                            \
+    } while (false)
+
+static time_fragment_t time_nor(time_fragment_t time_fragment) {
+    set_sign(time_fragment);
+
+    counter(time_fragment.nanos, time_fragment.micros);
+    counter(time_fragment.micros, time_fragment.millis);
+    counter(time_fragment.millis, time_fragment.second);
+
+    signums(time_fragment.nanos, time_fragment.signum);
+    signums(time_fragment.micros, time_fragment.signum);
+    signums(time_fragment.millis, time_fragment.signum);
+    signums(time_fragment.second, time_fragment.signum);
+
+    return time_fragment;
+}
+/*==================================================================================================================================================*/
 
 static clockid_t time_clockid_type_get(time_clockid_type_e type) {
     switch (type) {
@@ -84,7 +133,8 @@ time_fragment_t time_get(time_fragment_type_e type, time_clockid_type_e clockid)
 }
 
 int64_t time_delay(time_fragment_t time_delay, time_clockid_type_e clockid) {
-    time_delay            = time_nor(time_delay);
+    time_delay = time_nor(time_delay);
+
     time_fragment_t t_beg = {0};
     time_fragment_t t_end = {0};
     time_fragment_t t_cur = {0};
@@ -101,6 +151,8 @@ int64_t time_delay(time_fragment_t time_delay, time_clockid_type_e clockid) {
 }
 
 int64_t time_sleep(time_fragment_t time_sleep, time_clockid_type_e clockid) {
+    time_sleep = time_nor(time_sleep);
+
     struct timespec clock_time;
 
     // clang-format off
@@ -114,56 +166,10 @@ int64_t time_sleep(time_fragment_t time_sleep, time_clockid_type_e clockid) {
 
 /*==================================================================================================================================================*/
 
-#define set_sign(time_fragment)                                                                                                                      \
-    do {                                                                                                                                             \
-        if (time_fragment.signum != 0) {                                                                                                             \
-            time_fragment.nanos  *= time_fragment.signum;                                                                                            \
-            time_fragment.micros *= time_fragment.signum;                                                                                            \
-            time_fragment.millis *= time_fragment.signum;                                                                                            \
-            time_fragment.second *= time_fragment.signum;                                                                                            \
-            time_fragment.signum  = 0;                                                                                                               \
-        }                                                                                                                                            \
-    } while (false)
-
-#define counter(m, M)                                                                                                                                \
-    do {                                                                                                                                             \
-        if (m != 0) {                                                                                                                                \
-            M += m / CONSTANT_DIV_FRACTIONAL;                                                                                                        \
-            m  = m % CONSTANT_DIV_FRACTIONAL;                                                                                                        \
-        }                                                                                                                                            \
-    } while (false)
-
-#define signums(m, s)                                                                                                                                \
-    do {                                                                                                                                             \
-        if (s == 0) {                                                                                                                                \
-            s = +1;                                                                                                                                  \
-        }                                                                                                                                            \
-        if (m > 0) {                                                                                                                                 \
-            m *= +1;                                                                                                                                 \
-            s  = +1;                                                                                                                                 \
-        }                                                                                                                                            \
-        if (m < 0) {                                                                                                                                 \
-            m *= -1;                                                                                                                                 \
-            s  = -1;                                                                                                                                 \
-        }                                                                                                                                            \
-    } while (false)
-
-time_fragment_t time_nor(time_fragment_t time_fragment) {
-    set_sign(time_fragment);
-
-    counter(time_fragment.nanos, time_fragment.micros);
-    counter(time_fragment.micros, time_fragment.millis);
-    counter(time_fragment.millis, time_fragment.second);
-
-    signums(time_fragment.nanos, time_fragment.signum);
-    signums(time_fragment.micros, time_fragment.signum);
-    signums(time_fragment.millis, time_fragment.signum);
-    signums(time_fragment.second, time_fragment.signum);
-
-    return time_fragment;
-}
-
 time_fragment_t time_dif(time_fragment_t time_fragment_1, time_fragment_t time_fragment_2) {
+    time_fragment_1 = time_nor(time_fragment_1);
+    time_fragment_2 = time_nor(time_fragment_2);
+
     time_fragment_t time_fragment = {0};
 
     set_sign(time_fragment_1);
@@ -178,6 +184,9 @@ time_fragment_t time_dif(time_fragment_t time_fragment_1, time_fragment_t time_f
 }
 
 time_fragment_t time_sum(time_fragment_t time_fragment_1, time_fragment_t time_fragment_2) {
+    time_fragment_1 = time_nor(time_fragment_1);
+    time_fragment_2 = time_nor(time_fragment_2);
+
     time_fragment_t time_fragment = {0};
 
     set_sign(time_fragment_1);
@@ -209,10 +218,11 @@ time_fragment_t time_build(int64_t second, int64_t millis, int64_t micros, int64
 
 time_float_t time_convflt(time_fragment_t time_fragment) {
     time_fragment = time_nor(time_fragment);
+
     // clang-format off
     time_float_t time_float =
             (time_float_t)(time_fragment.signum) *
-                 ((time_float_t)(time_fragment.second)                 +
+                 ((time_float_t)(time_fragment.second)                         +
                            inversefactor(time_fragment.millis, CONSTANT_MILLI) +
                            inversefactor(time_fragment.micros, CONSTANT_MICRO) +
                            inversefactor(time_fragment.nanos , CONSTANT_NANOS));
@@ -223,16 +233,18 @@ time_float_t time_convflt(time_fragment_t time_fragment) {
 static int64_t scnprintf(char *buf, int64_t size, const char *fmt, ...) {
     va_list args;
     int     i;
+
     va_start(args, fmt);
     i = vsnprintf(buf, size, fmt, args);
     va_end(args);
+
     return (i >= size) ? size : i;
 }
 
 int64_t time_convstr(time_fragment_t time_fragment, char *buff, int64_t size) {
-    int64_t count = 0;
-
     time_fragment = time_nor(time_fragment);
+
+    int64_t count = 0;
 
     count += scnprintf(&buff[count], size - count, "| %c", time_fragment.signum == +1 ? '+' : time_fragment.signum == -1 ? '-' : '?');
     count += scnprintf(&buff[count], size - count, "%11" PRIi64 " sec  ", time_fragment.second);
@@ -246,20 +258,20 @@ int64_t time_convstr(time_fragment_t time_fragment, char *buff, int64_t size) {
 
 /*==================================================================================================================================================*/
 
+static time_system_t time_system_nor(time_system_t time_sys) {
+    time_sys.real = time_nor(time_sys.real);
+    time_sys.user = time_nor(time_sys.user);
+    time_sys.sys  = time_nor(time_sys.sys);
+
+    return time_sys;
+}
+
 time_system_t time_system_get(time_clockid_type_e clockid) {
     time_system_t time_sys = {0};
 
     time_sys.real = time_get(YAYA_TIME_FRAGMENT_TYPE_REAL, clockid);
     time_sys.user = time_get(YAYA_TIME_FRAGMENT_TYPE_USER, clockid);
     time_sys.sys  = time_get(YAYA_TIME_FRAGMENT_TYPE_SYS, clockid);
-
-    return time_sys;
-}
-
-time_system_t time_system_nor(time_system_t time_sys) {
-    time_sys.real = time_nor(time_sys.real);
-    time_sys.user = time_nor(time_sys.user);
-    time_sys.sys  = time_nor(time_sys.sys);
 
     return time_sys;
 }
@@ -285,6 +297,8 @@ time_system_t time_system_sum(time_system_t time_sys_1, time_system_t time_sys_2
 }
 
 int64_t time_system_convstr(time_system_t time_sys, char *buff, int64_t size) {
+    time_sys = time_system_nor(time_sys);
+
     int64_t count = 0;
 
     count += scnprintf(&buff[count], size - count, "real: ");
