@@ -70,6 +70,8 @@ static time_fragment_t time_nor(time_fragment_t time_fragment) {
 
 static clockid_t time_clockid_type_get(time_clockid_type_e type) {
     switch (type) {
+    case YAYA_TIME_CLOCK_TYPE_NONE:
+        return -1;
     case YAYA_TIME_CLOCK_TYPE_REALTIME:
         return CLOCK_REALTIME;
     case YAYA_TIME_CLOCK_TYPE_MONOTONIC:
@@ -91,7 +93,7 @@ time_fragment_t time_get(time_fragment_type_e type, time_clockid_type_e clockid)
 
     switch (type) {
     case YAYA_TIME_FRAGMENT_TYPE_RESOLUTION: {
-        value_ts = clock_getres(CLOCK_REALTIME, &clock_time);
+        value_ts = clock_getres(time_clockid_type_get(clockid), &clock_time);
         if (value_ts == -1) {
             return time_fragment;
         }
@@ -321,9 +323,9 @@ static time_system_t time_system_nor(time_system_t time_sys) {
 time_system_t time_system_get(time_clockid_type_e clockid) {
     time_system_t time_sys = {0};
 
+    time_sys.sys  = time_get(YAYA_TIME_FRAGMENT_TYPE_SYS , YAYA_TIME_CLOCK_TYPE_NONE);
     time_sys.real = time_get(YAYA_TIME_FRAGMENT_TYPE_REAL, clockid);
-    time_sys.user = time_get(YAYA_TIME_FRAGMENT_TYPE_USER, clockid);
-    time_sys.sys  = time_get(YAYA_TIME_FRAGMENT_TYPE_SYS, clockid);
+    time_sys.user = time_get(YAYA_TIME_FRAGMENT_TYPE_USER, YAYA_TIME_CLOCK_TYPE_NONE);
 
     return time_sys;
 }
@@ -344,6 +346,36 @@ time_system_t time_system_sum(time_system_t time_sys_1, time_system_t time_sys_2
     time_sys.real = time_sum(time_sys_1.real, time_sys_2.real);
     time_sys.user = time_sum(time_sys_1.user, time_sys_2.user);
     time_sys.sys  = time_sum(time_sys_1.sys, time_sys_2.sys);
+
+    return time_sys;
+}
+
+time_system_t   time_system_min(time_system_t time_sys_1, time_system_t time_sys_2){
+    time_system_t time_sys = {0};
+
+    time_sys.real = time_min(time_sys_1.real, time_sys_2.real);
+    time_sys.user = time_min(time_sys_1.user, time_sys_2.user);
+    time_sys.sys  = time_min(time_sys_1.sys, time_sys_2.sys);
+
+    return time_sys;
+}
+
+time_system_t   time_system_max(time_system_t time_sys_1, time_system_t time_sys_2){
+    time_system_t time_sys = {0};
+
+    time_sys.real = time_max(time_sys_1.real, time_sys_2.real);
+    time_sys.user = time_max(time_sys_1.user, time_sys_2.user);
+    time_sys.sys  = time_max(time_sys_1.sys, time_sys_2.sys);
+
+    return time_sys;
+}
+
+time_system_t time_system_build(time_fragment_t real, time_fragment_t user, time_fragment_t sys) {
+    time_system_t time_sys = {0};
+
+    time_sys.real = real;
+    time_sys.user = user;
+    time_sys.sys  = sys;
 
     return time_sys;
 }

@@ -3,9 +3,15 @@
 
 #include "stdint.h"
 
+#define YAYA_TIME_LIMIT_SECOND_MIN    (INT64_MIN + 1)
+#define YAYA_TIME_LIMIT_SECOND_MAX    (INT64_MAX)
+#define YAYA_TIME_LIMIT_FRAGMENT_MIN  0
+#define YAYA_TIME_LIMIT_FRAGMENT_MAX  999
+
 typedef double time_float_t;
 
 typedef enum {
+    YAYA_TIME_CLOCK_TYPE_NONE,
     YAYA_TIME_CLOCK_TYPE_REALTIME,
     YAYA_TIME_CLOCK_TYPE_MONOTONIC,
     YAYA_TIME_CLOCK_TYPE_CPUTIME,
@@ -55,6 +61,10 @@ time_system_t   time_system_get(time_clockid_type_e clockid);
 time_system_t   time_system_dif(time_system_t time_sys_1, time_system_t time_sys_2);
 time_system_t   time_system_sum(time_system_t time_sys_1, time_system_t time_sys_2);
 
+time_system_t   time_system_min(time_system_t time_sys_1, time_system_t time_sys_2);
+time_system_t   time_system_max(time_system_t time_sys_1, time_system_t time_sys_2);
+
+time_system_t   time_system_build(time_fragment_t real, time_fragment_t user, time_fragment_t sys);
 int64_t         time_system_convstr(time_system_t time_sys, char* buff, int64_t size);
 
 #endif /*YAYA_SYSTIME_H*/
